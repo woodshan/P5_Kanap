@@ -1,26 +1,34 @@
 const start = function() {
-    let url = "http://localhost:3000/api/products";
+    let urlProduit = new URL(location.href).searchParams.get("id");
+    console.log(urlProduit);
+
+    let url = `http://localhost:3000/api/products/${urlProduit}`
     fetch(url)
         .then((response) => response.json()
-        .then((data) => {
+        .then((product) => {
+            let image = document.createElement("img");
+            image.src = product.imageUrl;
+            image.alt = product.altTxt;
+            document.querySelector(".item__img").append(image);
 
-        let urlProduit = new URL(location.href).searchParams.get("id");
-        console.log(urlProduit);
-        
-        // let image = document.createElement("img");
-        // image.src = data.imageUrl;
-        // image.alt = data.alTxt;
-        // document.querySelector(".item__img").prepend(image);
-        document.querySelector("#title").innerHTML = data.name;
-        document.querySelector("#price").innerHTML = data.price;
-        document.querySelector("#description").innerHTML = data.description;
-        document.querySelector("option").innerHTML = data.colors;
+            document.querySelector("#title").textContent = product.name;
+
+            document.querySelector("#price").textContent = product.price;
+
+            document.querySelector("#description").textContent = product.description;
+
+            for(let option of product.colors) {
+                let color = document.createElement("option");
+                color.textContent = option;
+                document.querySelector("#colors").append(color);
+            }
             
         })
         ).catch(erreur => console.log("Il y a une erreur : " + erreur));
+
 }
 
-start();
+window.addEventListener("load", start);
 
 
 
