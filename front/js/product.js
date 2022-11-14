@@ -21,6 +21,7 @@ const start = function() {
             for(let option of product.colors) {
                 let color = document.createElement("option");
                 color.textContent = option;
+                color.value = option;
                 document.querySelector("#colors").append(color);
             }
             
@@ -34,7 +35,7 @@ window.addEventListener("load", start);
 // AJOUTER AU PANIER
 let btnAddToCart = document.querySelector("#addToCart");
 let panierQuantity = document.querySelector("#quantity");
-let colors = document.querySelector("#colors option");
+let colors = document.querySelector("#colors");
 
 function saveKanap(kanap) { //Enregistrer panier dans localSTorage
     localStorage.setItem("kanap", JSON.stringify(kanap));
@@ -51,11 +52,17 @@ function getKanap() {
 
 function addKanap(product) { //Ajouter le produit
     let kanap = getKanap();
-    let foundProduct = kanap.find(p => p.id == product.id); 
-    if(foundProduct != undefined) {
+    let foundProduct = kanap.find(p => p.id == product.id); //Je cherche dans mon panier s'il y a un produit dont l'id est égale à l'id du produit que je veux ajouter
+    let foundColors = kanap.find(c => c.colors == product.colors);// Je cherche dans mon panier s'il y a un produit dont la couleur est égale à la couleur du produit que je veux ajouter
+    // console.log(foundColors);
+    if(foundProduct != undefined && foundColors != undefined) { // S'il ne trouve pas de produit dans mon panier ayant la même couleur que le produit que je veux ajouter, retourne undefined
         foundProduct.quantity += Number(panierQuantity.value);
-    }else {
-        product.quantity = 0;
+        foundColors.quantity += Number(panierQuantity.value);
+        // console.log(product.quantity);
+    } else if (product.colors == "" || panierQuantity.value == 0) {
+        return kanap;
+    } else {
+        product.quantity = Number(panierQuantity.value);
         kanap.push(product);
     }
     saveKanap(kanap);
@@ -63,6 +70,7 @@ function addKanap(product) { //Ajouter le produit
 
 btnAddToCart.addEventListener("click", () => {
     addKanap({"id": urlProduct, "colors": colors.value})
+    // console.log(colors.value)
 })
-
+// console.log(colors.options);
 
