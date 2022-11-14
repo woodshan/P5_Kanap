@@ -61,8 +61,7 @@ function getTotalQuantity () {
     return number;
 }
 
+
 // console.log(getTotalPrice())
 
 window.addEventListener("load", start())
-
-
