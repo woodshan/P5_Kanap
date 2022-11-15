@@ -49,7 +49,8 @@ let btnAddToCart = document.querySelector("#addToCart");
 let panierQuantity = document.querySelector("#quantity");
 let colors = document.querySelector("#colors");
 
-function saveKanap(kanap) { //Enregistrer panier dans localSTorage
+//Enregistrer panier dans localSTorage
+function saveKanap(kanap) { 
     localStorage.setItem("kanap", JSON.stringify(kanap));
 }
 
