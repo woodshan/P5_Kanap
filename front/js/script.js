@@ -39,7 +39,7 @@ function displayKanap(products) {
             
         }
         
-        document.querySelector("#items").insertAdjacentHTML("beforeend", display);
+    document.querySelector("#items").insertAdjacentHTML("beforeend", display);
 }
 
 window.addEventListener("load", start);

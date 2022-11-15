@@ -1,6 +1,7 @@
 //Récupère l'id du produit dans l'URL
 let urlProduct = new URL(location.href).searchParams.get("id");
 
+
 const start = function() {
 
     // console.log(urlProduct);
@@ -72,7 +73,7 @@ function addKanap(product) {
     let foundColors = kanap.find(c => c.colors == product.colors);// Je cherche dans mon panier s'il y a un produit dont la couleur est égale à la couleur du produit que je veux ajouter
     // console.log(foundColors);
     if(foundProduct != undefined && foundColors != undefined) { // S'il ne trouve pas de produit dans mon panier ayant la même couleur que le produit que je veux ajouter, retourne undefined
-        foundProduct.quantity += Number(panierQuantity.value);
+        // foundProduct.quantity += Number(panierQuantity.value);
         foundColors.quantity += Number(panierQuantity.value);
         // console.log(product.quantity);
     } else if (product.colors == "" || panierQuantity.value == 0) {
