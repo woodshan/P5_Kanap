@@ -1,12 +1,33 @@
 const url = "http://localhost:3000/api/products";
+
+/**
+ * 
+ * @return {Promise<JSON>}
+ */
 const start = () => {
 fetch(url)
-    .then(response => response.json())
+    .then(response => {
+        if(response.ok === true) {
+        return response.json()
+        }
+    })
     .then(data => { 
+        console.table(data);
+        displayKanap(data); 
+    })
+    .catch(erreur => {
+        console.log("Il y a une erreur : " + erreur);
+    });
+;}
 
-        let display = ''
+/**
+ * Permet d'afficher les produits sur la page d'accueil
+ * @param {string} products 
+ */
+function displayKanap(products) {
+    let display = ''
         
-        for(let article of data)  { 
+        for(let article of products)  { 
             display += `
             <a href="product.html?id=${article._id}">
                 <article>
@@ -17,11 +38,9 @@ fetch(url)
             </a> `
             
         }
+        
         document.querySelector("#items").insertAdjacentHTML("beforeend", display);
-    })
-    .catch(erreur => {
-        console.log("Il y a une erreur : " + erreur);
-    });
-;}
+}
 
 window.addEventListener("load", start);
+

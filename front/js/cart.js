@@ -3,14 +3,17 @@ let kanap = JSON.parse(localStorage.getItem("kanap"));
 const start = function() {
     
     for(let basket of kanap) {
-
+        
     let url = `http://localhost:3000/api/products/${basket.id}`
 
     fetch(url)
-    .then((response) => response.json()
+    .then((response) => {
+        if(response.ok === true) {
+            return response.json()
+        }
+    })
     .then((product) => {
         let display = "";
-
             display = `
             <article class="cart__item" data-id=${basket.id} data-color=${basket.colors}>
                 <div class="cart__item__img">
@@ -34,23 +37,22 @@ const start = function() {
                 </div>
             </article>`
 
-            let productPrice = product.price * basket.quantity;
-
             let totalQuantity = document.querySelector("#totalQuantity");
             totalQuantity.textContent = getTotalQuantity();
 
             let totalPrice = document.querySelector("#totalPrice");
-            totalPrice.textContent = productPrice; 
-            console.log(productPrice);   
+            totalPrice.textContent = getTotalPrice(product.price, basket.quantity); 
+            // console.log(productPrice);   
 
         document.querySelector("#cart__items").insertAdjacentHTML("beforeend", display); 
-    })
-    ).catch(erreur => {
+    }) .catch(erreur => {
         console.log("Il y a une erreur : " + erreur)
     })
-        
+
     } 
 }
+
+
 
 //Calculer la quantité total du panier
 function getTotalQuantity () {
@@ -61,7 +63,14 @@ function getTotalQuantity () {
     return number;
 }
 
+//Calculer le prix total des articles
+let cartTotalPrice = 0;
+function getTotalPrice(price, quantity) {
+    cartTotalPrice += price * quantity;
+    return cartTotalPrice
+}
 
-// console.log(getTotalPrice())
+
+
 
 window.addEventListener("load", start())
