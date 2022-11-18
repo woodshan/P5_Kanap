@@ -165,6 +165,141 @@ function saveKanap(kanap) {
   localStorage.setItem("kanap", JSON.stringify(kanap));
 };
 
+// PARTIE PASSER LA COMMANDE
+
+// Recuperer tous les élement du formulaire;
+let firstName = document.querySelector("#firstName");
+let firstNameError = document.querySelector("#firstNameErrorMsg");
+
+let lastName = document.querySelector("#lastName");
+let lastNameError = document.querySelector("#lastNameErrorMsg");
+
+let address = document.querySelector("#address");
+let addressError = document.querySelector("#addressErrorMsg");
+
+let city = document.querySelector("#city");
+let cityError = document.querySelector("#cityErrorMsg");
+
+let email = document.querySelector("#email");
+let emailError = document.querySelector("#emailErrorMsg");
+
+let formulaire = document.querySelector(".cart__order__form");
+
+let orderButton = document.querySelector("#order");
+
+// Creation de regex 
+let nameRegExp = /^[a-zA-Z-àèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜŸçÇßØøÅåÆæœ\s\,\'\-]*$/
+let addressRegExp = /^[a-zA-Z0-9àèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜŸçÇßØøÅåÆæœ\s\,\'\-]*$/
+let numberRegExp = /[0-9]/
+let postalCode = /[0-9]{5}/
+let emailRegExp = new RegExp('^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$', 'g');
+
+//Fonction pour tester le prénom et le nom
+function nameValid(name, nameError, nameLength) {
+  if(nameRegExp.test(name) && name != "" && nameLength >= 2) {
+    nameError.style.display = "none";
+  } else {
+    nameError.textContent = "Ce champ doit contenir au minimum 2 caractères."
+  }
+}
+
+// Fonction pour tester l'adresse
+function addressValid() {
+  let splitWords = address.value.split(' ').length
+
+  if(addressRegExp.test(address.value) && splitWords >= 2 && numberRegExp.test(address.value)) {
+    addressError.style.display = "none";
+  } else {
+    addressError.textContent = "Veuillez indiquer une adresse valide."
+  }
+}
+
+// Fonction pour tester la ville
+function cityValid() {
+  let splitWords = city.value.split(' ').length;
+
+  if(addressRegExp.test(city.value) && splitWords >= 2 && postalCode.test(city.value)) {
+    cityError.style.display = "none";
+  } else {
+    cityError.textContent = "Veuillez indiquer votre code postal ainsi que votre ville (ex : 75000 Paris).";
+  }
+}
+
+//Fonction pour tester l'email
+function emailValid() {
+  if(emailRegExp.test(email.value)) {
+    emailError.style.display = "none";
+  } else {
+    emailError.textContent = "Veuillez indiquer une adresse email valide.";
+  }
+}
+
+// Objet contact 
+function createClass() {
+  class Contact {
+    constructor(firstName, lastName, address, city, email) {
+      this.firstName = firstName;
+      this.lastName = lastName;
+      this.address = address;
+      this.city = city;
+      this.email = email;
+    }
+  }
+
+  let user = new Contact(firstName.value, lastName.value, address.value, city.value, email.value)
+  // console.log(user);
+
+  let arrayProducts = [];
+  for(let basket of kanap) {
+    arrayProducts.push(basket.id)
+  }
+
+  let dataJson = JSON.stringify({user, arrayProducts})
+  // let productsJson = JSON.stringify(arrayProducts)
+
+  console.log(dataJson);
+  return dataJson;
+  // console.log(productsJson);
+}
 
 
+// Evenements au click du bouton commander
+orderButton.addEventListener("click", () => {
+  nameValid(firstName.value, firstNameError, firstName.value.length);
+  nameValid(lastName.value, lastNameError, lastName.value.length);
+  addressValid();
+  cityValid();
+  emailValid();
+})
 
+// Evenements à l'envoi du formulaire
+formulaire.addEventListener("submit", (e) => {
+  e.preventDefault();
+  if(kanap.length == 0) {
+    console.log("Votre panier est vide")
+  } else {
+    // createClass();
+    posterOrder();
+  }
+});
+
+async function posterOrder() {
+  await fetch("http://localhost:3000/api/products/order", {
+    method: "POST",
+    body: JSON.stringify(createClass()),
+    headers : {
+      "Accept": "application/json",
+      "Content-Type" : "application/json"
+    },
+  }) .then((response) => {
+    if (response.ok === true) {
+      return response.json();
+    }
+  })
+  console.log(response.json())
+};
+
+// async function resultat() {
+//   let result = await response.json();
+//   alert(result.message);
+// }
