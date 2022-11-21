@@ -102,13 +102,6 @@ function displayBasket(productInBasket, productInData) {
     productInData.price,
     productInBasket.quantity
   );
-
-  // Lorsque le panier est vide
-  if(kanap.length == 0) {
-    let displayForm = document.querySelector(".cart__order");
-    displayForm.style.display = "none";
-  }
-
 }
 
 //Calculer la quantité total du panier
@@ -202,69 +195,90 @@ let emailRegExp = new RegExp('^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2
 
 //Fonction pour tester le prénom et le nom
 function nameValid(name, nameError, nameLength) {
-  if(nameRegExp.test(name) && name != "" && nameLength >= 2) {
+  let nameValid = nameRegExp.test(name) && name != "" && nameLength >= 2
+  if(nameValid) {
     nameError.style.display = "none";
   } else {
     nameError.textContent = "Ce champ doit contenir au minimum 2 caractères."
   }
+  return nameValid
 }
 
 // Fonction pour tester l'adresse
 function addressValid() {
-  let splitWords = address.value.split(' ').length
+  let splitWords = address.value.split(' ').length;
+  let addressValid = addressRegExp.test(address.value) && splitWords >= 2 && numberRegExp.test(address.value);
 
-  if(addressRegExp.test(address.value) && splitWords >= 2 && numberRegExp.test(address.value)) {
+  if(addressValid) {
     addressError.style.display = "none";
   } else {
     addressError.textContent = "Veuillez indiquer une adresse valide."
   }
+  return addressValid;
 }
 
 // Fonction pour tester la ville
 function cityValid() {
   let splitWords = city.value.split(' ').length;
+  let cityValid = addressRegExp.test(city.value) && splitWords >= 2 && postalCode.test(city.value);
 
-  if(addressRegExp.test(city.value) && splitWords >= 2 && postalCode.test(city.value)) {
+  if(cityValid) {
     cityError.style.display = "none";
   } else {
     cityError.textContent = "Veuillez indiquer votre code postal ainsi que votre ville (ex : 75000 Paris).";
   }
+  return cityValid;
 }
 
 //Fonction pour tester l'email
-// function emailValid() {
-//   if(emailRegExp.test(email.value)) {
-//     emailError.style.display = "none";
-//   } else {
-//     emailError.textContent = "Veuillez indiquer une adresse email valide.";
-//   }
-// }
-let emailValid = emailRegExp.test(email.value);
-console.log(emailValid)
+function emailValid() {
+  let emailValid = emailRegExp.test(email.value);
+  if(emailValid) {
+    emailError.style.display = "none";
+  } else {
+    emailError.textContent = "Veuillez indiquer une adresse email valide.";
+  }
+  return emailValid;
+}
+
+// Fonction pour executer tous les tests
+function testError() {
+  testValid = nameValid(firstName.value, firstNameError, firstName.value.length) && nameValid(lastName.value, lastNameError, lastName.value.length) && addressValid() && cityValid() && emailValid();
+  nameValid(firstName.value, firstNameError, firstName.value.length)
+  nameValid(lastName.value, lastNameError, lastName.value.length)
+  addressValid()
+  cityValid()
+  emailValid()
+  return testValid;
+}
 
 // Objet contact et tableau produits
 // Evenements au click du bouton commander
 orderButton.addEventListener("click", (e) => {
   e.preventDefault()
 
-    let arrayProducts = [];
-    for(let basket of kanap) {
-      arrayProducts.push(basket.id)
+  testError();
+
+    if(testError()) {
+      let arrayProducts = [];
+      for(let basket of kanap) {
+        arrayProducts.push(basket.id)
+      }
+
+    const orderProducts = {
+      contact: {
+        firstName: firstName.value,
+        lastName: lastName.value,
+        address: address.value,
+        city: city.value,
+        email: email.value,
+      },
+      products: arrayProducts
     }
 
-  const orderProducts = {
-    contact: {
-      firstName: firstName.value,
-      lastName: lastName.value,
-      address: address.value,
-      city: city.value,
-      email: email.value,
-    },
-    products: arrayProducts
-  }
-
-  Ordered(orderProducts);
-  // console.log(JSON.stringify(orderProducts));
+    Ordered(orderProducts);
+    // console.log(JSON.stringify(orderProducts));
+    }
 })
 
 async function Ordered(orderProducts) {
@@ -278,10 +292,16 @@ async function Ordered(orderProducts) {
   })
 
   let result = await response.json();
-  console.log(result)
+  localStorage.clear();
+  window.location.href = `confirmation.html?orderId=${result.orderId}`;
 };
 
-// async function resultat() {
-//   let result = await response.json();
-//   alert(result.message);
-// }
+// Lorsque le panier est vide
+if(kanap.length == 0) {
+  formulaire.style.display = "none";
+
+  let title = document.querySelector("h1");
+  title.innerHTML = "Votre panier est vide";
+
+  document.querySelector(".cart__price").style.display = "none";
+}

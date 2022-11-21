@@ -1,5 +1,6 @@
 //Récupère l'id du produit dans l'URL
 let urlProduct = new URL(location.href).searchParams.get("id");
+console.log(urlProduct)
 
 const start = function () {
   // console.log(urlProduct);
@@ -32,6 +33,8 @@ function displayProduct(details) {
   document.querySelector("#price").textContent = details.price;
 
   document.querySelector("#description").textContent = details.description;
+
+  document.querySelector("title").textContent = details.name;
 
   for (let option of details.colors) {
     let color = document.createElement("option");
@@ -76,7 +79,6 @@ function addKanap(product) {
     // S'il ne trouve pas de produit dans mon panier ayant la même couleur que le produit que je veux ajouter, retourne undefined
     // foundProduct.quantity += Number(panierQuantity.value);
     foundColors.quantity += Number(panierQuantity.value);
-    // console.log(product.quantity);
   } else if (product.colors == "" || panierQuantity.value == 0) {
     return kanap;
   } else {
@@ -88,6 +90,11 @@ function addKanap(product) {
 
 btnAddToCart.addEventListener("click", () => {
   addKanap({ id: urlProduct, colors: colors.value });
+  // if(panierQuantity.value != 0) {
+  //   let addOrRemove = document.createElement("p");
+  //   addOrRemove.textContent = `Vous avez ajouté ${panierQuantity.value} produit(s) au panier`;
+  //   document.querySelector(".item__content__settings").appendChild(addOrRemove);
+  // }
   // console.log(colors.value)
 });
 // console.log(colors.options);
