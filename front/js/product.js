@@ -42,6 +42,11 @@ function displayProduct(details) {
     color.value = option;
     document.querySelector("#colors").append(color);
   }
+
+  // btnAddToCart.addEventListener("click", () => {
+  //   addOrRemove(details.name);
+  // })
+  
 }
 
 window.addEventListener("load", start);
@@ -90,11 +95,32 @@ function addKanap(product) {
 
 btnAddToCart.addEventListener("click", () => {
   addKanap({ id: urlProduct, colors: colors.value });
-  // if(panierQuantity.value != 0) {
-  //   let addOrRemove = document.createElement("p");
-  //   addOrRemove.textContent = `Vous avez ajouté ${panierQuantity.value} produit(s) au panier`;
-  //   document.querySelector(".item__content__settings").appendChild(addOrRemove);
-  // }
+  if(colors.value != "" && panierQuantity.value > 0) {
+    let addToCart = document.createElement("p")
+    addToCart.style.color = "#83FF00";
+    addToCart.textContent = `Vous avez ajouté ${panierQuantity.value} produit(s) au panier`
+    document.querySelector(".item__content__settings").appendChild(addToCart);
+  } else {
+    if(panierQuantity.value <= 0) {
+      let quantityError = document.createElement("p");
+      quantityError.style.color = "red";
+      quantityError.innerHTML = "Choisissez une quantité"
+      document.querySelector(".item__content__settings__quantity").appendChild(quantityError);
+      return;
+    }
+  }
+  panierQuantity.value = 0;
+  colors.value = "";
   // console.log(colors.value)
 });
 // console.log(colors.options);
+colors.addEventListener("change", () => {
+  let errorColor = document.createElement("p");
+  if(colors.value == "") {
+    let errorColor = document.createElement("p");
+    errorColor.style.color = "red";
+    errorColor.innerHTML = "Choisissez une couleur"
+    document.querySelector(".item__content__settings__color").appendChild(errorColor);
+    return 
+  } 
+})
