@@ -103,6 +103,12 @@ function displayBasket(productInBasket, productInData) {
     productInBasket.quantity
   );
 
+  // Lorsque le panier est vide
+  if(kanap.length == 0) {
+    let displayForm = document.querySelector(".cart__order");
+    displayForm.style.display = "none";
+  }
+
 }
 
 //Calculer la quantité total du panier
@@ -121,14 +127,6 @@ function getTotalPrice(price, quantity) {
   return cartTotalPrice;
 };
 
-// Retirer le produit du panier
-function removeFromBasket(element, idProduct, colorProduct) {
-  element.closest(".cart__item").remove();
-  kanap = kanap.filter(p => p.id != idProduct) && kanap.filter(p => p.colors != colorProduct);
-  saveKanap(kanap);
-  // location.reload();
-};
-
 // Clicker pour retirer le produit du panier
 function clickDelete () {
   let deleteBtn = document.querySelectorAll('.deleteItem'); 
@@ -143,6 +141,14 @@ function clickDelete () {
     })
   }
 }
+
+// Retirer le produit du panier
+function removeFromBasket(element, idProduct, colorProduct) {
+  element.closest(".cart__item").remove();
+  kanap = kanap.filter(p => p.id != idProduct) && kanap.filter(p => p.colors != colorProduct);
+  saveKanap(kanap);
+  location.reload();
+};
 
 // Changer la quantité du produit à partir de la page panier
 function changeQuantity() {
@@ -226,77 +232,53 @@ function cityValid() {
 }
 
 //Fonction pour tester l'email
-function emailValid() {
-  if(emailRegExp.test(email.value)) {
-    emailError.style.display = "none";
-  } else {
-    emailError.textContent = "Veuillez indiquer une adresse email valide.";
-  }
-}
+// function emailValid() {
+//   if(emailRegExp.test(email.value)) {
+//     emailError.style.display = "none";
+//   } else {
+//     emailError.textContent = "Veuillez indiquer une adresse email valide.";
+//   }
+// }
+let emailValid = emailRegExp.test(email.value);
+console.log(emailValid)
 
-// Objet contact 
-function createClass() {
-  class Contact {
-    constructor(firstName, lastName, address, city, email) {
-      this.firstName = firstName;
-      this.lastName = lastName;
-      this.address = address;
-      this.city = city;
-      this.email = email;
-    }
-  }
-
-  let user = new Contact(firstName.value, lastName.value, address.value, city.value, email.value)
-  // console.log(user);
-
-  let arrayProducts = [];
-  for(let basket of kanap) {
-    arrayProducts.push(basket.id)
-  }
-
-  let dataJson = JSON.stringify({user, arrayProducts})
-  // let productsJson = JSON.stringify(arrayProducts)
-
-  console.log(dataJson);
-  return dataJson;
-  // console.log(productsJson);
-}
-
-
+// Objet contact et tableau produits
 // Evenements au click du bouton commander
-orderButton.addEventListener("click", () => {
-  nameValid(firstName.value, firstNameError, firstName.value.length);
-  nameValid(lastName.value, lastNameError, lastName.value.length);
-  addressValid();
-  cityValid();
-  emailValid();
+orderButton.addEventListener("click", (e) => {
+  e.preventDefault()
+
+    let arrayProducts = [];
+    for(let basket of kanap) {
+      arrayProducts.push(basket.id)
+    }
+
+  const orderProducts = {
+    contact: {
+      firstName: firstName.value,
+      lastName: lastName.value,
+      address: address.value,
+      city: city.value,
+      email: email.value,
+    },
+    products: arrayProducts
+  }
+
+  Ordered(orderProducts);
+  // console.log(JSON.stringify(orderProducts));
 })
 
-// Evenements à l'envoi du formulaire
-formulaire.addEventListener("submit", (e) => {
-  e.preventDefault();
-  if(kanap.length == 0) {
-    console.log("Votre panier est vide")
-  } else {
-    // createClass();
-    posterOrder();
-  }
-});
-
-async function posterOrder() {
-  await fetch("http://localhost:3000/api/products/order", {
+async function Ordered(orderProducts) {
+  let response = await fetch("http://localhost:3000/api/products/order", {
     method: "POST",
-    body: JSON.stringify(createClass()),
     headers : {
       "Accept": "application/json",
       "Content-Type" : "application/json"
     },
-  }) .then((response) => {
-    if (response.ok === true) {
-      return response.json();
-    }
+    body: JSON.stringify(orderProducts),
   })
-  console.log(response.json())
+
+  let result = await response.json();
+  console.log(result)
 };
 
 // async function resultat() {
