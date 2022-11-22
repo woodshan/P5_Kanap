@@ -153,6 +153,7 @@ function changeQuantity() {
       let foundProduct = kanap.find((p) => p.id == id) && kanap.find((p) => p.colors == color);
       if (foundProduct != undefined) {
         foundProduct.quantity += Number(btn.value) - foundProduct.quantity;
+        location.reload();
       }
       saveKanap(kanap);
     })

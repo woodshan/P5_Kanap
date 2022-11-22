@@ -93,34 +93,84 @@ function addKanap(product) {
   saveKanap(kanap);
 }
 
+// Valid message
+let msgValid;
+let msgValidate = document.createElement("p");
+msgValidate.style.color = "#00FF00";
+msgValidate.style.fontWeight = "bold";
+document.querySelector(".item__content__settings").appendChild(msgValidate);
+msgValidate.style.display = "none";
+
+function validMsg() {
+  if (panierQuantity.value > 0 && colors.value != "") {
+    msgValid = true;
+  } else {
+    msgValid = false;
+  }
+
+  if(msgValid) {
+    msgValidate.style.display = "block";
+    msgValidate.textContent = `Vous avez ajouté ${panierQuantity.value} produit(s) ${colors.value} au panier`
+  } else {
+    msgValidate.style.display = "none";
+  }
+}
+
+// Error Messages
+let errorMsgColor;
+let errorColor = document.createElement("p");
+errorColor.style.color = "red";
+errorColor.innerHTML = "Choisissez une couleur"
+document.querySelector(".item__content__settings__color").appendChild(errorColor);
+errorColor.style.display = "none";
+
+let quantityMsgError;
+let quantityError = document.createElement("p");
+quantityError.style.color = "red";
+quantityError.innerHTML = "Choisissez une quantité"
+document.querySelector(".item__content__settings__quantity").appendChild(quantityError);
+quantityError.style.display = "none";
+
+function msgError() {
+  if(colors.value == "") {
+    errorMsgColor = true
+  } else {
+    errorMsgColor = false
+  }
+
+  if(errorMsgColor) {
+    errorColor.style.display = "block";
+  } else {
+    errorColor.style.display = "none"
+  }
+
+  if(panierQuantity.value <= 0) {
+    quantityMsgError = true;
+  } else {
+    quantityMsgError = false
+  }
+
+  if(quantityMsgError) {
+    quantityError.style.display = "block";
+  } else {
+    quantityError.style.display = "none";
+  }
+}
+
+
 btnAddToCart.addEventListener("click", () => {
   addKanap({ id: urlProduct, colors: colors.value });
-  if(colors.value != "" && panierQuantity.value > 0) {
-    let addToCart = document.createElement("p")
-    addToCart.style.color = "#83FF00";
-    addToCart.textContent = `Vous avez ajouté ${panierQuantity.value} produit(s) au panier`
-    document.querySelector(".item__content__settings").appendChild(addToCart);
-  } else {
-    if(panierQuantity.value <= 0) {
-      let quantityError = document.createElement("p");
-      quantityError.style.color = "red";
-      quantityError.innerHTML = "Choisissez une quantité"
-      document.querySelector(".item__content__settings__quantity").appendChild(quantityError);
-      return;
-    }
-  }
+  msgError();
+  validMsg();
   panierQuantity.value = 0;
   colors.value = "";
   // console.log(colors.value)
 });
-// console.log(colors.options);
+
 colors.addEventListener("change", () => {
-  let errorColor = document.createElement("p");
-  if(colors.value == "") {
-    let errorColor = document.createElement("p");
-    errorColor.style.color = "red";
-    errorColor.innerHTML = "Choisissez une couleur"
-    document.querySelector(".item__content__settings__color").appendChild(errorColor);
-    return 
-  } 
-})
+  msgError();
+});
+
+panierQuantity.addEventListener("change", () => {
+  msgError();
+});
