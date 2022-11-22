@@ -1,7 +1,7 @@
 const url = "http://localhost:3000/api/products";
 
 /**
- *
+ * 
  * @return {Promise<JSON>}
  */
 const start = () => {
@@ -12,7 +12,6 @@ const start = () => {
       }
     })
     .then((data) => {
-      // console.table(data);
       displayKanap(data);
     })
     .catch((erreur) => {
@@ -25,7 +24,6 @@ const start = () => {
  * @param {string} products
  */
 function displayKanap(products) {
-
   for (let article of products) {
     let link = document.createElement("a");
     link.href = `product.html?id=${article._id}`;

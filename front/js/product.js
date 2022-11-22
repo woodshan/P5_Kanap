@@ -1,15 +1,13 @@
 //Récupère l'id du produit dans l'URL
 let urlProduct = new URL(location.href).searchParams.get("id");
-console.log(urlProduct)
 
 const start = function () {
-  // console.log(urlProduct);
 
   let url = `http://localhost:3000/api/products/${urlProduct}`;
   fetch(url)
     .then((response) => {
-      if(response.ok === true) {
-        return response.json()
+      if (response.ok === true) {
+        return response.json();
       }
     })
     .then((product) => {
@@ -46,7 +44,6 @@ function displayProduct(details) {
   // btnAddToCart.addEventListener("click", () => {
   //   addOrRemove(details.name);
   // })
-  
 }
 
 window.addEventListener("load", start);
@@ -79,10 +76,8 @@ function addKanap(product) {
   let kanap = getKanap();
   let foundProduct = kanap.find((p) => p.id == product.id); //Je cherche dans mon panier s'il y a un produit dont l'id est égale à l'id du produit que je veux ajouter
   let foundColors = kanap.find((c) => c.colors == product.colors); // Je cherche dans mon panier s'il y a un produit dont la couleur est égale à la couleur du produit que je veux ajouter
-  // console.log(foundColors);
   if (foundProduct != undefined && foundColors != undefined) {
     // S'il ne trouve pas de produit dans mon panier ayant la même couleur que le produit que je veux ajouter, retourne undefined
-    // foundProduct.quantity += Number(panierQuantity.value);
     foundColors.quantity += Number(panierQuantity.value);
   } else if (product.colors == "" || panierQuantity.value == 0) {
     return kanap;
@@ -102,15 +97,16 @@ document.querySelector(".item__content__settings").appendChild(msgValidate);
 msgValidate.style.display = "none";
 
 function validMsg() {
+
   if (panierQuantity.value > 0 && colors.value != "") {
     msgValid = true;
   } else {
     msgValid = false;
   }
 
-  if(msgValid) {
+  if (msgValid) {
     msgValidate.style.display = "block";
-    msgValidate.textContent = `Vous avez ajouté ${panierQuantity.value} produit(s) ${colors.value} au panier`
+    msgValidate.textContent = `Vous avez ajouté ${panierQuantity.value} produit(s) ${colors.value} au panier`;
   } else {
     msgValidate.style.display = "none";
   }
@@ -120,43 +116,46 @@ function validMsg() {
 let errorMsgColor;
 let errorColor = document.createElement("p");
 errorColor.style.color = "red";
-errorColor.innerHTML = "Choisissez une couleur"
-document.querySelector(".item__content__settings__color").appendChild(errorColor);
+errorColor.innerHTML = "Choisissez une couleur.";
+document
+  .querySelector(".item__content__settings__color")
+  .appendChild(errorColor);
 errorColor.style.display = "none";
 
 let quantityMsgError;
 let quantityError = document.createElement("p");
 quantityError.style.color = "red";
-quantityError.innerHTML = "Choisissez une quantité"
-document.querySelector(".item__content__settings__quantity").appendChild(quantityError);
+quantityError.innerHTML = "Choisissez une quantité.";
+document
+  .querySelector(".item__content__settings__quantity")
+  .appendChild(quantityError);
 quantityError.style.display = "none";
 
 function msgError() {
-  if(colors.value == "") {
-    errorMsgColor = true
+  if (colors.value == "") {
+    errorMsgColor = true;
   } else {
-    errorMsgColor = false
+    errorMsgColor = false;
   }
 
-  if(errorMsgColor) {
+  if (errorMsgColor) {
     errorColor.style.display = "block";
   } else {
-    errorColor.style.display = "none"
+    errorColor.style.display = "none";
   }
 
-  if(panierQuantity.value <= 0) {
+  if (panierQuantity.value <= 0) {
     quantityMsgError = true;
   } else {
-    quantityMsgError = false
+    quantityMsgError = false;
   }
 
-  if(quantityMsgError) {
+  if (quantityMsgError) {
     quantityError.style.display = "block";
   } else {
     quantityError.style.display = "none";
   }
 }
-
 
 btnAddToCart.addEventListener("click", () => {
   addKanap({ id: urlProduct, colors: colors.value });
@@ -164,13 +163,14 @@ btnAddToCart.addEventListener("click", () => {
   validMsg();
   panierQuantity.value = 0;
   colors.value = "";
-  // console.log(colors.value)
 });
 
 colors.addEventListener("change", () => {
+  msgValidate.style.display = "none";
   msgError();
 });
 
 panierQuantity.addEventListener("change", () => {
+  msgValidate.style.display = "none";
   msgError();
 });
