@@ -1,5 +1,6 @@
 let kanap = JSON.parse(localStorage.getItem("kanap"));
 
+// Send request using fetch api to get products added to cart in cart page
 const start = async function () {
   for (let basket of kanap) {
     let url = `http://localhost:3000/api/products/${basket.id}`;
@@ -23,7 +24,7 @@ const start = async function () {
 
 window.addEventListener("load", start());
 
-//Afficher le panier
+// Display added cart products
 function displayBasket(productInBasket, productInData) {
   let article = document.createElement("article");
   article.classList.add("cart__item");
@@ -105,7 +106,7 @@ function displayBasket(productInBasket, productInData) {
   );
 }
 
-//Calculer la quantité total du panier
+// Calculate total cart quantity
 function getTotalQuantity() {
   let number = 0;
   for (let total of kanap) {
@@ -114,14 +115,20 @@ function getTotalQuantity() {
   return number;
 }
 
-//Calculer le prix total des articles
+// PART TOTAL CART PRICE
 let cartTotalPrice = 0;
+/**
+ * Calculate total cart price
+ * @param {number} price
+ * @param {number} quantity
+ * @returns Total cart price
+ */
 function getTotalPrice(price, quantity) {
   cartTotalPrice += price * quantity;
   return cartTotalPrice;
 }
 
-// Clicker pour retirer le produit du panier
+// Delete cart product by clicking button
 function clickDelete() {
   let deleteBtn = document.querySelectorAll(".deleteItem");
   for (let btn of deleteBtn) {
@@ -133,7 +140,12 @@ function clickDelete() {
   }
 }
 
-// Retirer le produit du panier
+/**
+ * Remove selected product
+ * @param {*} element
+ * @param {string} idProduct
+ * @param {string} colorProduct
+ */
 function removeFromBasket(element, idProduct, colorProduct) {
   element.closest(".cart__item").remove();
   kanap =
@@ -143,7 +155,9 @@ function removeFromBasket(element, idProduct, colorProduct) {
   location.reload();
 }
 
-// Changer la quantité du produit à partir de la page panier
+/**
+ * Change quantity in cart page
+ */
 function changeQuantity() {
   let btnChange = document.querySelectorAll(".itemQuantity");
   for (let btn of btnChange) {
@@ -152,7 +166,9 @@ function changeQuantity() {
       let color = evt.target.closest("article").dataset.color;
       let foundProduct =
         kanap.find((p) => p.id == id) && kanap.find((p) => p.colors == color);
-      if (foundProduct != undefined) {
+      if (btn.value <= 0) {
+        removeFromBasket(btn, id, color);
+      } else if (foundProduct != undefined) {
         foundProduct.quantity += Number(btn.value) - foundProduct.quantity;
         location.reload();
       }
@@ -161,14 +177,16 @@ function changeQuantity() {
   }
 }
 
-//Enregistrer panier dans localSTorage
+/**
+ * Save cart in the Local Storage.
+ * @param {string} kanap Cart in the local storage.
+ */
 function saveKanap(kanap) {
   localStorage.setItem("kanap", JSON.stringify(kanap));
 }
 
-// PARTIE PASSER LA COMMANDE
-
-// Recuperer tous les élement du formulaire;
+// TO ORDER PART
+// Get all form elements
 let firstName = document.querySelector("#firstName");
 let firstNameError = document.querySelector("#firstNameErrorMsg");
 
@@ -184,34 +202,52 @@ let cityError = document.querySelector("#cityErrorMsg");
 let email = document.querySelector("#email");
 let emailError = document.querySelector("#emailErrorMsg");
 
-let formulaire = document.querySelector(".cart__order__form");
+let form = document.querySelector(".cart__order__form");
 
 let orderButton = document.querySelector("#order");
 
-// Creation de regex
+// Display empty cart
+if (kanap == null || kanap.length == 0) {
+  form.style.display = "none";
+
+  let title = document.querySelector("h1");
+  title.innerHTML = "Votre panier est vide";
+
+  document.querySelector(".cart__price").style.display = "none";
+};
+
+// Create Regex
 let nameRegExp =
   /^[a-zA-Z-àèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜŸçÇßØøÅåÆæœ\s\,\'\-]*$/;
 let addressRegExp =
   /^[a-zA-Z0-9àèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜŸçÇßØøÅåÆæœ\s\,\'\-]*$/;
 let numberRegExp = /[0-9]/;
 let postalCode = /[0-9]{5}/;
-let emailRegExp = new RegExp(
-  "^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$",
-  "g"
-);
+let emailRegExp = /^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$/;
 
-//Fonction pour tester le prénom et le nom
+/**
+ * Test the validity of the first and last name and displays error messages
+ * @param {string} name user data
+ * @param {*} nameError Error message
+ * @param {number} nameLength user data length
+ * @returns Boolean
+ */
 function nameValid(name, nameError, nameLength) {
   let nameValid = nameRegExp.test(name) && name != "" && nameLength >= 2;
   if (nameValid) {
     nameError.style.display = "none";
   } else {
-    nameError.textContent = "Ce champ doit contenir au minimum 2 caractères.";
+    nameError.textContent =
+      "Ce champ doit contenir au minimum 2 caractères sans nombre.";
+    nameError.style.display = "block";
   }
   return nameValid;
 }
 
-// Fonction pour tester l'adresse
+/**
+ * Test the validity of the address and displays error messages
+ * @returns Boolean
+ */
 function addressValid() {
   let splitWords = address.value.split(" ").length;
   let addressValid =
@@ -223,11 +259,15 @@ function addressValid() {
     addressError.style.display = "none";
   } else {
     addressError.textContent = "Veuillez indiquer une adresse valide.";
+    addressError.style.display = "block";
   }
   return addressValid;
 }
 
-// Fonction pour tester la ville
+/**
+ * Test the validity of the city and displays error messages
+ * @returns Boolean
+ */
 function cityValid() {
   let splitWords = city.value.split(" ").length;
   let cityValid =
@@ -240,22 +280,30 @@ function cityValid() {
   } else {
     cityError.textContent =
       "Veuillez indiquer votre code postal ainsi que votre ville (ex : 75000 Paris).";
+    cityError.style.display = "block";
   }
   return cityValid;
 }
 
-//Fonction pour tester l'email
+/**
+ * Test the validity of the email and displays error messages
+ * @returns Boolean
+ */
 function emailValid() {
   let emailValid = emailRegExp.test(email.value);
   if (emailValid) {
     emailError.style.display = "none";
   } else {
+    emailError.style.display = "block";
     emailError.textContent = "Veuillez indiquer une adresse email valide.";
   }
   return emailValid;
 }
 
-// Fonction pour executer tous les tests
+/**
+ * Test the validity of all tests and run them
+ * @returns Boolean
+ */
 function testError() {
   testValid =
     nameValid(firstName.value, firstNameError, firstName.value.length) &&
@@ -263,16 +311,21 @@ function testError() {
     addressValid() &&
     cityValid() &&
     emailValid();
+
   nameValid(firstName.value, firstNameError, firstName.value.length);
   nameValid(lastName.value, lastNameError, lastName.value.length);
   addressValid();
   cityValid();
   emailValid();
+
   return testValid;
 }
 
-// Objet contact et tableau produits
-// Evenements au click du bouton commander
+/**
+ * Run actions by clicking the button to order
+ * Create an object "Contact" using form data
+ * Create an array of id products
+ */
 orderButton.addEventListener("click", (e) => {
   e.preventDefault();
 
@@ -299,6 +352,10 @@ orderButton.addEventListener("click", (e) => {
   }
 });
 
+/**
+ * Requesting api using fetch to get order Id
+ * @param {{contact, idProducts}} orderProducts form data and Id products
+ */
 async function Ordered(orderProducts) {
   let response = await fetch("http://localhost:3000/api/products/order", {
     method: "POST",
@@ -312,14 +369,6 @@ async function Ordered(orderProducts) {
   let result = await response.json();
   localStorage.clear();
   window.location.href = `confirmation.html?orderId=${result.orderId}`;
-}
+};
 
-// Lorsque le panier est vide
-if (kanap == null || kanap.length == 0) {
-  formulaire.style.display = "none";
 
-  let title = document.querySelector("h1");
-  title.innerHTML = "Votre panier est vide";
-
-  document.querySelector(".cart__price").style.display = "none";
-}

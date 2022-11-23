@@ -1,7 +1,7 @@
 const url = "http://localhost:3000/api/products";
 
 /**
- * 
+ * Send request using fetch api to get products.
  * @return {Promise<JSON>}
  */
 const start = () => {
@@ -20,7 +20,7 @@ const start = () => {
 };
 
 /**
- * Permet d'afficher les produits sur la page d'accueil
+ * Display products on the homepage.
  * @param {string} products
  */
 function displayKanap(products) {
