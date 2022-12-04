@@ -13,18 +13,33 @@ const start = async function () {
       })
       .then((product) => {
         displayBasket(basket, product);
+        if (product._id == basket.id) {
+          console.log(product.price)
+          console.log(kanap[0])
+          for(let element of kanap) {
+            if(product._id == element.id) {
+              element.price = product.price
+            }
+          }
+        }
       })
       .catch((erreur) => {
         console.log("Il y a une erreur : " + erreur);
       });
   }
+  getTotalPrice();
   clickDelete();
   changeQuantity();
 };
 
 window.addEventListener("load", start());
+console.log(kanap)
 
-// Display added cart products
+/**
+ * Display added cart products
+ * @param {*} productInBasket product in local storage cart
+ * @param {*} productInData api products data 
+ */
 function displayBasket(productInBasket, productInData) {
   let article = document.createElement("article");
   article.classList.add("cart__item");
@@ -58,9 +73,11 @@ function displayBasket(productInBasket, productInData) {
   contentDescription.appendChild(productColors);
 
   let productPrice = document.createElement("p");
+  productPrice.classList.add("productPrice");
   productPrice.textContent = `${
     productInData.price * productInBasket.quantity
   } €`;
+  productPrice.setAttribute("data-value", productInData.price * productInBasket.quantity);
   contentDescription.appendChild(productPrice);
 
   let settingsContainer = document.createElement("div");
@@ -98,12 +115,6 @@ function displayBasket(productInBasket, productInData) {
 
   let totalQuantity = document.querySelector("#totalQuantity");
   totalQuantity.textContent = getTotalQuantity();
-
-  let totalPrice = document.querySelector("#totalPrice");
-  totalPrice.textContent = getTotalPrice(
-    productInData.price,
-    productInBasket.quantity
-  );
 }
 
 // Calculate total cart quantity
@@ -116,16 +127,39 @@ function getTotalQuantity() {
 }
 
 // PART TOTAL CART PRICE
-let cartTotalPrice = 0;
+// let cartTotalPrice = 0;
 /**
  * Calculate total cart price
  * @param {number} price
  * @param {number} quantity
  * @returns Total cart price
  */
-function getTotalPrice(price, quantity) {
-  cartTotalPrice += price * quantity;
-  return cartTotalPrice;
+function getTotalPrice() {
+  let cartTotalPrice = 0;
+  for(let element of kanap) {
+    console.log(element.price)
+    console.log(element.quantity)
+    cartTotalPrice += element.price * element.quantity;
+  }
+  console.log(cartTotalPrice)
+  let totalPrice = document.querySelector("#totalPrice");
+  totalPrice.textContent = cartTotalPrice;
+}
+
+/**
+ * Remove selected product
+ * @param {object} element delete button
+ * @param {string} idProduct
+ * @param {string} colorProduct
+ */
+ function removeFromBasket(element, idProduct, colorProduct) {
+  element.closest(".cart__item").remove();
+  kanap =
+    kanap.filter((p) => p.id != idProduct) &&
+    kanap.filter((p) => p.colors != colorProduct);
+  totalQuantity.textContent = getTotalQuantity();  
+  saveKanap(kanap);
+  emptyCart();
 }
 
 // Delete cart product by clicking button
@@ -141,21 +175,6 @@ function clickDelete() {
 }
 
 /**
- * Remove selected product
- * @param {*} element
- * @param {string} idProduct
- * @param {string} colorProduct
- */
-function removeFromBasket(element, idProduct, colorProduct) {
-  element.closest(".cart__item").remove();
-  kanap =
-    kanap.filter((p) => p.id != idProduct) &&
-    kanap.filter((p) => p.colors != colorProduct);
-  saveKanap(kanap);
-  location.reload();
-}
-
-/**
  * Change quantity in cart page
  */
 function changeQuantity() {
@@ -168,22 +187,32 @@ function changeQuantity() {
         kanap.find((p) => p.id == id) && kanap.find((p) => p.colors == color);
       if (btn.value <= 0) {
         removeFromBasket(btn, id, color);
-      } else if (foundProduct != undefined) {
+      } else if (
+        foundProduct != undefined &&
+        btn.value.split(".").length == 1 &&
+        btn.value <= 100
+      ) {
         foundProduct.quantity += Number(btn.value) - foundProduct.quantity;
-        location.reload();
+        totalQuantity.textContent = getTotalQuantity();
+        // getTotalPrice()
       }
       saveKanap(kanap);
     });
   }
 }
-
 /**
  * Save cart in the Local Storage.
  * @param {string} kanap Cart in the local storage.
  */
 function saveKanap(kanap) {
-  localStorage.setItem("kanap", JSON.stringify(kanap));
-}
+  let kanapTemp = kanap;
+  for(let element of kanapTemp) {
+    if(element.hasAttribute("price")) {
+      console.log("Attribut a retirer de l'element")
+    }
+  };
+  localStorage.setItem("kanap", JSON.stringify(kanapTemp));
+};
 
 // TO ORDER PART
 // Get all form elements
@@ -207,14 +236,18 @@ let form = document.querySelector(".cart__order__form");
 let orderButton = document.querySelector("#order");
 
 // Display empty cart
-if (kanap == null || kanap.length == 0) {
-  form.style.display = "none";
+function emptyCart() {
+  if (kanap == null || kanap.length == 0) {
+    form.style.display = "none";
 
-  let title = document.querySelector("h1");
-  title.innerHTML = "Votre panier est vide";
+    let title = document.querySelector("h1");
+    title.innerHTML = "Votre panier est vide";
 
-  document.querySelector(".cart__price").style.display = "none";
-};
+    document.querySelector(".cart__price").style.display = "none";
+  }
+}
+
+emptyCart();
 
 // Create Regex
 let nameRegExp =
@@ -367,8 +400,6 @@ async function Ordered(orderProducts) {
   });
 
   let result = await response.json();
-  localStorage.clear();
   window.location.href = `confirmation.html?orderId=${result.orderId}`;
-};
-
-
+  localStorage.clear();
+}

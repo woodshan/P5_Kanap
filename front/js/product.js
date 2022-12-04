@@ -60,7 +60,7 @@ function saveKanap(kanap) {
 
 /**
  * Get cart in the local storage
- * @returns Array
+ * @returns Array of products
  */
 function getKanap() {
   let kanap = localStorage.getItem("kanap");
@@ -80,10 +80,10 @@ function addKanap(product) {
   let kanap = getKanap();
   let foundProduct = kanap.find((p) => p.id == product.id); //Je cherche dans mon panier s'il y a un produit dont l'id est égale à l'id du produit que je veux ajouter
   let foundColors = kanap.find((c) => c.colors == product.colors); // Je cherche dans mon panier s'il y a un produit dont la couleur est égale à la couleur du produit que je veux ajouter
-  if (foundProduct != undefined && foundColors != undefined && cartQuantity.value > 0) {
+  if (foundProduct != undefined && foundColors != undefined && cartQuantity.value > 0 && cartQuantity.value.split(".").length == 1 && cartQuantity.value <= 100) {
     // S'il ne trouve pas de produit dans mon panier ayant la même couleur que le produit que je veux ajouter, retourne undefined
     foundColors.quantity += Number(cartQuantity.value);
-  } else if (product.colors == "" || cartQuantity.value <= 0) {
+  } else if (product.colors == "" || cartQuantity.value <= 0 || cartQuantity.value.split(".").length != 1 || cartQuantity.value > 100) {
     return kanap;
   } else {
     product.quantity = Number(cartQuantity.value);
@@ -91,7 +91,6 @@ function addKanap(product) {
   }
   saveKanap(kanap);
 }
-
 // Create add to cart success message.
 let msgValid;
 let msgValidate = document.createElement("p");
@@ -103,7 +102,7 @@ msgValidate.style.display = "none";
 // Add to cart success message conditions.
 function validMsg() {
 
-  if (cartQuantity.value > 0 && colors.value != "") {
+  if (cartQuantity.value > 0 && colors.value != "" && cartQuantity.value.split(".").length == 1 && cartQuantity.value < 100) {
     msgValid = true;
   } else {
     msgValid = false;
@@ -148,7 +147,7 @@ function msgError() {
     errorColor.style.display = "none";
   };
 
-  if (cartQuantity.value <= 0) {
+  if (cartQuantity.value <= 0 || cartQuantity.value.split(".").length != 1 || cartQuantity.value > 100) {
     quantityMsgError = true;
   } else {
     quantityMsgError = false;
@@ -156,7 +155,7 @@ function msgError() {
 
   if (quantityMsgError) {
     quantityError.style.color = "red";
-    quantityError.textContent = "Choisissez une quantité.";
+    quantityError.textContent = "Choisissez une quantité valable.";
     quantityError.style.display = "block";
   } else {
     quantityError.style.display = "none";
