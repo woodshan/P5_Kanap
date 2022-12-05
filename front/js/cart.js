@@ -13,19 +13,13 @@ const start = async function () {
       })
       .then((product) => {
         displayBasket(basket, product);
-        if (product._id == basket.id) {
-          for(let element of kanap) {
-            if(product._id == element.id) {
-              element.price = product.price
-            }
-          }
-        }
+        pushPrice(product, basket);
       })
       .catch((erreur) => {
         console.log("Il y a une erreur : " + erreur);
       });
   }
-  getTotalPrice();
+  computeTotalPrice();
   clickDelete();
   changeQuantity();
 };
@@ -33,9 +27,24 @@ const start = async function () {
 window.addEventListener("load", start());
 
 /**
+ * Push price in kanap
+ * @param {object} product api products data
+ * @param {object} basket product in local storage cart
+ */
+function pushPrice(product, basket) {
+  if (product._id == basket.id) {
+    for (let element of kanap) {
+      if (product._id == element.id) {
+        element.price = product.price;
+      };
+    };
+  };
+};
+
+/**
  * Display added cart products
  * @param {*} productInBasket product in local storage cart
- * @param {*} productInData api products data 
+ * @param {*} productInData api products data
  */
 function displayBasket(productInBasket, productInData) {
   let article = document.createElement("article");
@@ -110,15 +119,13 @@ function displayBasket(productInBasket, productInData) {
   contentDelete.appendChild(deleteItem);
 
   let totalQuantity = document.querySelector("#totalQuantity");
-  totalQuantity.textContent = getTotalQuantity();
+  totalQuantity.textContent = computeTotalQuantity();
 
-  quantity.addEventListener("change", () => {
-    productPrice.textContent = `${productInData.price * quantity.value} €`;
-  })
+  computeUnitTotalPrice(productPrice, quantity, productInData.price);
 }
 
 // Calculate total cart quantity
-function getTotalQuantity() {
+function computeTotalQuantity() {
   let number = 0;
   for (let total of kanap) {
     number += total.quantity;
@@ -127,16 +134,15 @@ function getTotalQuantity() {
 }
 
 // PART TOTAL CART PRICE
-// let cartTotalPrice = 0;
 /**
  * Calculate total cart price
  * @param {number} price
  * @param {number} quantity
  * @returns Total cart price
  */
-function getTotalPrice() {
+function computeTotalPrice() {
   let cartTotalPrice = 0;
-  for(let element of kanap) {
+  for (let element of kanap) {
     cartTotalPrice += element.price * element.quantity;
   }
   let totalPrice = document.querySelector("#totalPrice");
@@ -144,16 +150,18 @@ function getTotalPrice() {
 }
 
 /**
- * 
- * @param {Number} Quantity value
+ * Calculate total article's price
+ * @param {object} total price's text
+ * @param {object} article's input quantity
+ * @param {number} article's price
  */
-function getUnitTotalPrice() {
-  let productPrice = document.querySelector(".productPrice");
-  let unitTotal = 0;
-  unitTotal += kanap.price * kanap.quantity;
-  console.log(unitTotal)
-  productPrice.textContent = `${unitTotal} €`;
-};
+function computeUnitTotalPrice(productPrice, quantity, price) {
+  quantity.addEventListener("change", () => {
+    if (quantity.value.split(".").length == 1 && quantity.value <= 100) {
+      productPrice.textContent = `${price * quantity.value} €`;
+    }
+  });
+}
 
 /**
  * Remove selected product
@@ -161,14 +169,14 @@ function getUnitTotalPrice() {
  * @param {string} idProduct
  * @param {string} colorProduct
  */
- function removeFromBasket(element, idProduct, colorProduct) {
+function removeFromBasket(element, idProduct, colorProduct) {
   element.closest(".cart__item").remove();
   kanap =
     kanap.filter((p) => p.id != idProduct) &&
     kanap.filter((p) => p.colors != colorProduct);
-  totalQuantity.textContent = getTotalQuantity();
-  getTotalPrice();  
-  saveKanap(kanap);
+  totalQuantity.textContent = computeTotalQuantity();
+  computeTotalPrice();
+  saveKanap();
   emptyCart();
 }
 
@@ -182,7 +190,7 @@ function clickDelete() {
       removeFromBasket(btn, id, color);
     });
   }
-};
+}
 
 /**
  * Change quantity in cart page
@@ -203,38 +211,33 @@ function changeQuantity() {
         btn.value <= 100
       ) {
         foundProduct.quantity += Number(btn.value) - foundProduct.quantity;
-        totalQuantity.textContent = getTotalQuantity();
-        getTotalPrice();
-        // getUnitTotalPrice();
+        totalQuantity.textContent = computeTotalQuantity();
+        computeTotalPrice();
       }
-      saveKanap(kanap);
+      saveKanap();
     });
   }
 }
 /**
  * Save cart in the Local Storage.
- * @param {string} kanap Cart in the local storage.
  */
- function saveKanap() {
+function saveKanap() {
   // on souhaite conserver intact le contenu de kanap
   let copy = JSON.parse(JSON.stringify(kanap));
   // pour chaque élément du panier
-  for(let element of copy) {
+  for (let element of copy) {
     // On vérifie que cet élément (objet JS) a une propriété nommée "price"
-    if(element.hasOwnProperty("price")) {
+    if (element.hasOwnProperty("price")) {
       // On supprime cette propriété
       delete element.price;
-      console.log("prix retiré")
     }
-  };
-  console.log("copy APRES modif : ",copy);
+  }
+  console.log("copy APRES modif : ", copy);
   // suppression de l'item Kanap du LS
   localStorage.removeItem("kanap");
   // Ajout de l'item Kanap au LS
   localStorage.setItem("kanap", JSON.stringify(copy));
-  // Verif contenu LS
-  console.log(localStorage.getItem("kanap"));
-};
+}
 
 // TO ORDER PART
 // Get all form elements
@@ -283,76 +286,76 @@ let emailRegExp = /^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$/;
 /**
  * Test the validity of the first and last name and displays error messages
  * @param {string} name user data
- * @param {*} nameError Error message
+ * @param {object} nameError Error message
  * @param {number} nameLength user data length
  * @returns Boolean
  */
-function nameValid(name, nameError, nameLength) {
-  let nameValid = nameRegExp.test(name) && name != "" && nameLength >= 2;
-  if (nameValid) {
+function checkName(name, nameError, nameLength) {
+  let checkName = nameRegExp.test(name) && name != "" && nameLength >= 2;
+  if (checkName) {
     nameError.style.display = "none";
   } else {
     nameError.textContent =
       "Ce champ doit contenir au minimum 2 caractères sans nombre.";
     nameError.style.display = "block";
   }
-  return nameValid;
+  return checkName;
 }
 
 /**
  * Test the validity of the address and displays error messages
  * @returns Boolean
  */
-function addressValid() {
+function checkAddress() {
   let splitWords = address.value.split(" ").length;
-  let addressValid =
+  let checkAddress =
     addressRegExp.test(address.value) &&
     splitWords >= 2 &&
     numberRegExp.test(address.value);
 
-  if (addressValid) {
+  if (checkAddress) {
     addressError.style.display = "none";
   } else {
     addressError.textContent = "Veuillez indiquer une adresse valide.";
     addressError.style.display = "block";
   }
-  return addressValid;
+  return checkAddress;
 }
 
 /**
  * Test the validity of the city and displays error messages
  * @returns Boolean
  */
-function cityValid() {
+function checkCity() {
   let splitWords = city.value.split(" ").length;
-  let cityValid =
+  let checkCity =
     addressRegExp.test(city.value) &&
     splitWords >= 2 &&
     postalCode.test(city.value);
 
-  if (cityValid) {
+  if (checkCity) {
     cityError.style.display = "none";
   } else {
     cityError.textContent =
       "Veuillez indiquer votre code postal ainsi que votre ville (ex : 75000 Paris).";
     cityError.style.display = "block";
   }
-  return cityValid;
+  return checkCity;
 }
 
 /**
  * Test the validity of the email and displays error messages
  * @returns Boolean
  */
-function emailValid() {
-  let emailValid = emailRegExp.test(email.value);
-  if (emailValid) {
+function checkEmail() {
+  let checkEmail = emailRegExp.test(email.value);
+  if (checkEmail) {
     emailError.style.display = "none";
   } else {
     emailError.style.display = "block";
     emailError.textContent = "Veuillez indiquer une adresse email valide.";
   }
-  return emailValid;
+  return checkEmail;
 }
 
 /**
@@ -360,20 +363,20 @@ function emailValid() {
  * @returns Boolean
  */
 function testError() {
-  testValid =
-    nameValid(firstName.value, firstNameError, firstName.value.length) &&
-    nameValid(lastName.value, lastNameError, lastName.value.length) &&
-    addressValid() &&
-    cityValid() &&
-    emailValid();
+  checkTest =
+    checkName(firstName.value, firstNameError, firstName.value.length) &&
+    checkName(lastName.value, lastNameError, lastName.value.length) &&
+    checkAddress() &&
+    checkCity() &&
+    checkEmail();
 
-  nameValid(firstName.value, firstNameError, firstName.value.length);
-  nameValid(lastName.value, lastNameError, lastName.value.length);
-  addressValid();
-  cityValid();
-  emailValid();
+  checkName(firstName.value, firstNameError, firstName.value.length);
+  checkName(lastName.value, lastNameError, lastName.value.length);
+  checkAddress();
+  checkCity();
+  checkEmail();
 
-  return testValid;
+  return checkTest;
 }
 
 /**
