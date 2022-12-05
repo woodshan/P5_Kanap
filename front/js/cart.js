@@ -14,8 +14,6 @@ const start = async function () {
       .then((product) => {
         displayBasket(basket, product);
         if (product._id == basket.id) {
-          console.log(product.price)
-          console.log(kanap[0])
           for(let element of kanap) {
             if(product._id == element.id) {
               element.price = product.price
@@ -33,7 +31,6 @@ const start = async function () {
 };
 
 window.addEventListener("load", start());
-console.log(kanap)
 
 /**
  * Display added cart products
@@ -77,7 +74,6 @@ function displayBasket(productInBasket, productInData) {
   productPrice.textContent = `${
     productInData.price * productInBasket.quantity
   } €`;
-  productPrice.setAttribute("data-value", productInData.price * productInBasket.quantity);
   contentDescription.appendChild(productPrice);
 
   let settingsContainer = document.createElement("div");
@@ -115,6 +111,10 @@ function displayBasket(productInBasket, productInData) {
 
   let totalQuantity = document.querySelector("#totalQuantity");
   totalQuantity.textContent = getTotalQuantity();
+
+  quantity.addEventListener("change", () => {
+    productPrice.textContent = `${productInData.price * quantity.value} €`;
+  })
 }
 
 // Calculate total cart quantity
@@ -137,14 +137,23 @@ function getTotalQuantity() {
 function getTotalPrice() {
   let cartTotalPrice = 0;
   for(let element of kanap) {
-    console.log(element.price)
-    console.log(element.quantity)
     cartTotalPrice += element.price * element.quantity;
   }
-  console.log(cartTotalPrice)
   let totalPrice = document.querySelector("#totalPrice");
   totalPrice.textContent = cartTotalPrice;
 }
+
+/**
+ * 
+ * @param {Number} Quantity value
+ */
+function getUnitTotalPrice() {
+  let productPrice = document.querySelector(".productPrice");
+  let unitTotal = 0;
+  unitTotal += kanap.price * kanap.quantity;
+  console.log(unitTotal)
+  productPrice.textContent = `${unitTotal} €`;
+};
 
 /**
  * Remove selected product
@@ -157,7 +166,8 @@ function getTotalPrice() {
   kanap =
     kanap.filter((p) => p.id != idProduct) &&
     kanap.filter((p) => p.colors != colorProduct);
-  totalQuantity.textContent = getTotalQuantity();  
+  totalQuantity.textContent = getTotalQuantity();
+  getTotalPrice();  
   saveKanap(kanap);
   emptyCart();
 }
@@ -172,7 +182,7 @@ function clickDelete() {
       removeFromBasket(btn, id, color);
     });
   }
-}
+};
 
 /**
  * Change quantity in cart page
@@ -194,7 +204,8 @@ function changeQuantity() {
       ) {
         foundProduct.quantity += Number(btn.value) - foundProduct.quantity;
         totalQuantity.textContent = getTotalQuantity();
-        // getTotalPrice()
+        getTotalPrice();
+        // getUnitTotalPrice();
       }
       saveKanap(kanap);
     });
@@ -204,14 +215,25 @@ function changeQuantity() {
  * Save cart in the Local Storage.
  * @param {string} kanap Cart in the local storage.
  */
-function saveKanap(kanap) {
-  let kanapTemp = kanap;
-  for(let element of kanapTemp) {
-    if(element.hasAttribute("price")) {
-      console.log("Attribut a retirer de l'element")
+ function saveKanap() {
+  // on souhaite conserver intact le contenu de kanap
+  let copy = JSON.parse(JSON.stringify(kanap));
+  // pour chaque élément du panier
+  for(let element of copy) {
+    // On vérifie que cet élément (objet JS) a une propriété nommée "price"
+    if(element.hasOwnProperty("price")) {
+      // On supprime cette propriété
+      delete element.price;
+      console.log("prix retiré")
     }
   };
-  localStorage.setItem("kanap", JSON.stringify(kanapTemp));
+  console.log("copy APRES modif : ",copy);
+  // suppression de l'item Kanap du LS
+  localStorage.removeItem("kanap");
+  // Ajout de l'item Kanap au LS
+  localStorage.setItem("kanap", JSON.stringify(copy));
+  // Verif contenu LS
+  console.log(localStorage.getItem("kanap"));
 };
 
 // TO ORDER PART
