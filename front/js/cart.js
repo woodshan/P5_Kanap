@@ -15,8 +15,8 @@ const start = async function () {
         displayBasket(basket, product);
         pushPrice(product, basket);
       })
-      .catch((erreur) => {
-        console.log("Il y a une erreur : " + erreur);
+      .catch((error) => {
+        console.log("Il y a une erreur : " + error);
       });
   }
   computeTotalPrice();
@@ -36,15 +36,15 @@ function pushPrice(product, basket) {
     for (let element of kanap) {
       if (product._id == element.id) {
         element.price = product.price;
-      };
-    };
-  };
-};
+      }
+    }
+  }
+}
 
 /**
  * Display added cart products
- * @param {*} productInBasket product in local storage cart
- * @param {*} productInData api products data
+ * @param {object} productInBasket product in local storage cart
+ * @param {object} productInData api products data
  */
 function displayBasket(productInBasket, productInData) {
   let article = document.createElement("article");
@@ -218,24 +218,19 @@ function changeQuantity() {
     });
   }
 }
+
 /**
  * Save cart in the Local Storage.
  */
 function saveKanap() {
-  // on souhaite conserver intact le contenu de kanap
   let copy = JSON.parse(JSON.stringify(kanap));
-  // pour chaque élément du panier
   for (let element of copy) {
-    // On vérifie que cet élément (objet JS) a une propriété nommée "price"
     if (element.hasOwnProperty("price")) {
-      // On supprime cette propriété
       delete element.price;
     }
   }
   console.log("copy APRES modif : ", copy);
-  // suppression de l'item Kanap du LS
   localStorage.removeItem("kanap");
-  // Ajout de l'item Kanap au LS
   localStorage.setItem("kanap", JSON.stringify(copy));
 }
 
@@ -363,7 +358,7 @@ function checkEmail() {
  * @returns Boolean
  */
 function testError() {
-  checkTest =
+  let checkTest =
     checkName(firstName.value, firstNameError, firstName.value.length) &&
     checkName(lastName.value, lastNameError, lastName.value.length) &&
     checkAddress() &&

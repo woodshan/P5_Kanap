@@ -14,8 +14,8 @@ const start = () => {
     .then((data) => {
       displayKanap(data);
     })
-    .catch((erreur) => {
-      console.log("Il y a une erreur : " + erreur);
+    .catch((error) => {
+      console.log("Il y a une erreur : " + error);
     });
 };
 
