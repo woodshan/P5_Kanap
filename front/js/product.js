@@ -56,7 +56,7 @@ let colors = document.querySelector("#colors");
  */
 function saveKanap(kanap) {
   localStorage.setItem("kanap", JSON.stringify(kanap));
-};
+}
 
 /**
  * Get cart in the local storage
@@ -80,25 +80,36 @@ function addKanap(product) {
   let kanap = getKanap();
   let foundProduct = kanap.find((p) => p.id == product.id);
   let foundColors = kanap.find((c) => c.colors == product.colors);
+  let cartSumProduct = 0;
+  let cartSumColors = 0;
   if (
     foundProduct != undefined &&
     foundColors != undefined &&
     cartQuantity.value > 0 &&
     cartQuantity.value.split(".").length == 1 &&
-    cartQuantity.value <= 100 
+    cartQuantity.value <= 100
   ) {
-    foundColors.quantity += Number(cartQuantity.value);
+    cartSumProduct = Number(cartQuantity.value) + Number(foundProduct.quantity);
+    cartSumColors = Number(cartQuantity.value) + Number(foundColors.quantity);
+    if (cartSumColors <= 100 && product.id == foundColors.id) {
+      foundColors.quantity += Number(cartQuantity.value);
+    } else if (cartSumProduct <= 100 && product.id == foundProduct.id) {
+      foundProduct.quantity += Number(cartQuantity.value);
+    }
   } else if (
     product.colors == "" ||
     cartQuantity.value <= 0 ||
     cartQuantity.value.split(".").length != 1 ||
-    cartQuantity.value > 100 
+    cartQuantity.value > 100 ||
+    cartSumProduct > 100 ||
+    cartSumColors > 100
   ) {
     return kanap;
   } else {
     product.quantity = Number(cartQuantity.value);
     kanap.push(product);
   }
+  successMsg(cartSumProduct, cartSumColors);
   saveKanap(kanap);
 }
 
@@ -111,12 +122,14 @@ document.querySelector(".item__content__settings").appendChild(msgValidate);
 msgValidate.style.display = "none";
 
 // Add to cart success message conditions.
-function successMsg() {
+function successMsg(sumProduct, sumColors) {
   if (
-    cartQuantity.value > 0 &&
-    colors.value != "" &&
-    cartQuantity.value.split(".").length == 1 &&
-    cartQuantity.value < 100
+    (cartQuantity.value > 0 &&
+      colors.value != "" &&
+      cartQuantity.value.split(".").length == 1 &&
+      cartQuantity.value <= 100 &&
+      sumProduct <= 100) ||
+    sumColors <= 100
   ) {
     msgSuccess = true;
   } else {
@@ -185,7 +198,6 @@ function msgError() {
 btnAddToCart.addEventListener("click", () => {
   addKanap({ id: urlProduct, colors: colors.value });
   msgError();
-  successMsg();
   cartQuantity.value = 0;
   colors.value = "";
 });
